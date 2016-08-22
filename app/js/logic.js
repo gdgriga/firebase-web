@@ -131,13 +131,12 @@ var app = new Vue({
         },
         fixKarma: function(src, target){
             panels = this.natural_order;
-            user = this.users['anonymouse']; /* auth.currentUser.uid] */
+            user = this.users[auth.currentUser.uid]
             if (panels.indexOf(src) < panels.indexOf(target)){
                 user.karma += 1;
             } else {
                 user.karma = -1;
             }
-            this.users['anonymouse'] = user;
             console.log('Karma should be updated in DB');
         }
     }
@@ -159,32 +158,48 @@ const storage = firebase.storage();
 $('#login-btn').click(function(){
     const email = $('#email_input').val();
     const pass = $('#pass_input').val();
-    $('#mainview').show();
-    console.log('Should authenticate user');
+    const promise = auth.signInWithEmailAndPassword(email, pass);
+    promise.catch(e => console.log(e.message));
+    console.log('Done');
 });
 
 $('#register-btn').click(e => {
     const email = $('#email_input').val();
-    if (!validateEmail(email)) { bootbox.alert('Please, check your email'); return; }
+    if (!validateEmail(email)) { alert('Please, check your email'); return; }
     const pass = $('#pass_input').val();
-    if (!validatePassword(pass)) { bootbox.alert('Password should contain different symbols and be at least 6 characters'); return; }
+    if (!validatePassword(pass)) { alert('Password should contain different symbols and be at least 6 characters'); return; }
     bootbox.prompt({
         title: 'Please, confirm your password',
         inputType: 'password',
         callback: function(result) {
             if (result === pass) {
-                console.log('Should add user into Auth registry');
-                console.log('when user added, we need to register him in DB');
-            } else {
-                bootbox.alert('Passwords do not match. Please, type same password twice.');
+                const promise = auth.createUserWithEmailAndPassword(email, pass);
+                promise.then(e => {
+                    console.log('User added. Need to register him in DB');
+                }).catch(e => console.log(e.message));
             }
         }
     });
 });
 
+
+firebase.auth().onAuthStateChanged(firebaseUser => {
+    if (firebaseUser){
+        uid = firebaseUser.uid;
+        app.user.email = firebaseUser.email;
+        $('#login_form').hide();
+        $('#profile').show();
+        $('#mainview').show();
+    } else {
+        console.log('User logged out')
+        $('#login_form').show();
+        $('#profile').hide();
+        $('#mainview').hide();
+    }
+});
+
 $('#logout-btn').click(function(){
-    $('#mainview').hide();
-    console.log('Should logout user');
+    auth.signOut();
 });
 
 function gravatarURL(email){
