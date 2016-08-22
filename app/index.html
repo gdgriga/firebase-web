@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>fireDRill</title>
+
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<link rel="stylesheet" href="css/static.css" />
+
+<script src="js/jquery-1.11.3.js"></script>
+<script src="js/jquery.md5.js"></script>
+<!-- VueJS library and plugins -->
+<script src="js/vue.js"></script>
+<script src="js/vue-resource.js"></script>
+<script src="js/vue.drag-and-drop.js"></script>
+<!-- Bootstrap JS library and plugins -->
+<script src="js/bootstrap.min.js" crossorigin="anonymous"></script>
+<script src="js/bootbox.min.js"></script>
+<!-- Firebase -->
+<script src="js/firebase.js"></script>
+<script src="js/firebase.config.js"></script>
+</head>
+<body>
+<div id="drillapp">
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Firebase Workshop</a>
+        </div>
+
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <div class="nav navbar-nav navbar-right">
+                <ul class="nav navbar-nav" id="login_form">
+                    <li>
+                        <input id="email_input" type="email"  class="form-control" name="email" value="" placeholder="E-mail" />
+                    </li>
+                    <li>
+                        <input id="pass_input" type="password" name="pass"  class="form-control" value="" placeholder="Password" />
+                    </li>
+                    <li><button type="submit" class="btn btn-primary" id="login-btn">Login</button></li>
+                    <li><button type="button" class="btn btn-secondary" id="register-btn">Register</button></li>
+                </ul>
+                <ul class="nav navbar-nav" id="profile" style="padding: 5px;">
+                    <li style="margin:0 10px"><img v-bind:src="user_avatar" width="48" height="48" /></li>
+                    <li style="margin:0 10px; padding: 8px 0;">{{user_email}}</li>
+                    <li><button id="logout-btn" type="button" class="btn btn-primary">Logout</button></li>
+                </ul>
+            </div>
+        </div><!-- /.navbar-collapse -->
+    </div><!-- /.container-fluid -->
+</nav>
+
+    <div class="container">
+        <div class="jumbotron">
+          <div id="mainview" class="row fill">
+              <div class="col-md-3 no-float">
+                  <h2>Backlog</h2>
+                  <ul class="panel" v-drag-and-drop drop="dropHandle" collection-name="backlog">
+                      <li class="item"
+                          draggable="true"
+                          v-for="item in backlog"
+                          v-on:dblclick="detailView"
+                          v-bind:key="item.key"
+                          v-bind:collection-name="item.collection">#{{item.key}}: {{item.title}}</li>
+                  </ul>
+                  <input v-model="new_task.backlog" class="form-control" v-bind:text="backlog_new"
+                         placeholder="Add task to backlog" v-on:keyup.enter="addTask" collection-name="backlog" />
+              </div>
+              <div class="col-md-3 no-float">
+                  <h2>Sprint</h2>
+                  <ul class="panel" v-drag-and-drop drop="dropHandle" collection-name="sprint">
+                      <li class="item"
+                          draggable="true"
+                          v-for="item in sprint"
+                          v-on:dblclick="detailView"
+                          v-bind:key="item.key"
+                          v-bind:collection-name="item.collection">#{{item.key}}: {{item.title}}
+                      </li>
+                  </ul>
+                  <input v-model="new_task.sprint" class="form-control" v-bind:text="sprint_new"
+                         placeholder="Add task to sprint" v-on:keyup.enter="addTask" collection-name="sprint" />
+              </div>
+              <div class="col-md-3 no-float">
+                  <h2>In Progress</h2>
+                  <ul class="panel" v-drag-and-drop drop="dropHandle" collection-name="in_progress">
+                      <li class="item"
+                          draggable="true"
+                          v-for="item in in_progress"
+                          v-on:dblclick="detailView"
+                          v-bind:key="item.key"
+                          v-bind:collection-name="item.collection">#{{item.key}}: {{item.title}}</li>
+                  </ul>
+              </div>
+              <div class="col-md-3 no-float">
+                  <h2>Done</h2>
+                  <ul class="panel" v-drag-and-drop drop="dropHandle" collection-name="done">
+                      <li class="item"
+                          draggable="true"
+                          v-for="item in done"
+                          v-on:dblclick="detailView"
+                          v-bind:key="item.key"
+                          v-bind:collection-name="item.collection">#{{item.key}}: {{item.title}}</li>
+                  </ul>
+              </div>
+          </div>
+      </div>
+    </div>
+</div>
+<script src="js/logic.js"></script>
+</body>
+</html>

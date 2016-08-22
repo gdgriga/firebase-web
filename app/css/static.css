@@ -1,0 +1,23 @@
+body { font-family: Roboto, Arial, sans-serif; background: #ECEFF1; color: rgba(0,0,0,0.87); }
+html, body, .container, .col-md-3 { height: 100%; }
+.container
+{
+    display:table;
+    width: 100%;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+}
+.container:before { content: ''; height: 100%; float: left; }
+
+.row { height: 100%; display: table-row; }
+.col-md-3.no-float, .col-md-9.no-float {
+    float: none; /* thanks baxabbit */
+}
+.col-md-3 { display: table-cell; background: greenyellow; border: 1px solid black; position: relative}
+
+ul.panel { height: 100%; min-height: 300px; list-style: none inside none; padding: 0; margin: 0; }
+
+.item { display: block; min-height: 30px; margin: 3px; padding: 0; border: 1px solid darkolivegreen; font-size: large; font-weight: bold; }
+
+#assign-task, #remove-task { cursor: hand; }
+

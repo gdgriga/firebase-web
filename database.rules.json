@@ -1,0 +1,15 @@
+{
+  "rules":{
+    ".read":"auth != null",
+    "users": {
+      "$user": {
+        ".write": "newData.exists()",
+        ".validate": "newData.hasChildren(['email', 'karma', 'avatar'])",
+        "karma": {
+          ".validate": "newData.isNumber()"
+        }
+      }
+    },
+    "tasks": { ".write": "auth != null" }
+  }
+}

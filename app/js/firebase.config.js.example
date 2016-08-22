@@ -1,0 +1,8 @@
+// Initialize Firebase
+var config = {
+    apiKey: "API_KEY",
+    authDomain: "AUTH_DOMAIN",
+    databaseURL: "DB_URL",
+    storageBucket: "BUCKET",
+};
+firebase.initializeApp(config);
