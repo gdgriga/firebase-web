@@ -82,7 +82,9 @@ var app = new Vue({
             message_form += '   </select></div>';
             message_form += '</div> <!--row -->';
             if ((task.attachment) && (task.attachment !== "undefined")){
-                console.log('Read & display attachment file from storage');
+                console.log(task.attachment);
+                console.log(typeof task.attachment);
+                storage.refFromURL(task.attachment).getDownloadURL().then(e => {$('#attached_file').attr('src',e); $('#attached_file').show(); $('#remove_icon').show(); });
             } else {
                 $('#attached_file').hide();
                 $('#remove_icon').hide();
@@ -95,7 +97,25 @@ var app = new Vue({
                         label: "Attach file",
                         className: "btn",
                         callback: function(){
-                            console.log('File upload sequense activates here');
+                            file_handle = $('#attach_file').get(0).files[0];
+                            if (file_handle){
+                                randomize = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 16);
+                                timestamp = (new Date()).toISOString().replace(/-/g,"").replace(/:/g,"").replace(/\./g,"");
+                                _key = 'attachments/'+randomize+'_'+timestamp+'_'+file_handle.name;
+                                uploadTask = storage.ref().child(_key).put(file_handle);
+                                uploadTask.on('state_changed',
+                                    function(snapshot){},
+                                    function(error){ console.log(error.val())},
+                                    function(){
+                                        imgRef = uploadTask.snapshot.ref.toString();
+                                        $('#update_attach').val(imgRef);
+                                        $('#attached_file').attr('src',uploadTask.snapshot.downloadURL);
+                                        $('#attached_file').show();
+                                        $('#remove_icon').show();
+                                    }
+                                )
+                            }
+                            return false;
                         }
                     },
                     save: {
@@ -121,7 +141,7 @@ var app = new Vue({
                             bootbox.confirm("Are you sure you want to remove this task?", function(result){
                                 if (result){
                                     if ((task.attachment) && (task.attachment !== "undefined")) {
-                                        console.log('Attachment deletion goes here');
+                                      storage.refFromURL(task.attachment).delete().then();
                                     }
                                     tasksRef.child(key).remove().then(function(){ console.log('Remove Successful')}).catch(e => { console.log(e);});
                                 }
@@ -224,7 +244,12 @@ function gravatarURL(email){
 function removeAttach(task_key){
     bootbox.confirm("Are you sure you want to remove this attachment?", function(result){
         if (result){
-            console.log('Contains removal function');
+            attachRef = $('#update_attach').val();
+            if (typeof attachRef === "undefined") return;
+            storage.refFromURL(attachRef).delete().then();
+            $('#update_attach').val("");
+            $('#attached_file').toggle();
+            $('#remove_icon').toggle();
         }
     });
 }
