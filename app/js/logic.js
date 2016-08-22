@@ -16,9 +16,7 @@ var app = new Vue({
             sprint: ""
         },
         user: {},
-        users: {
-            anonymouse: {karma: 0, email: "secret@service.com", avatar: "img/profile-512.png"}
-        },
+        users: {},
         updated_info: { title: "", assignee: "", collection: ""}
     },
     ready: function(){
@@ -50,17 +48,20 @@ var app = new Vue({
             key = item.getAttribute('key');
             source = item.getAttribute('collection-name');
             destination = target.getAttribute('collection-name');
-            this.tasks[key].collection = destination;
-            console.log("This update should go to DB");
+            update_record = {};
+            update_record[key] = this.tasks[key];
+            update_record[key].collection = destination;
+            tasksRef.update(update_record).catch(e => {console.log(e)});
             this.fixKarma(source, destination);
             //this.tasks[key].collection = destination;
         },
         addTask: function(item){
             collection = item.srcElement.getAttribute('collection-name');
             task = { title: this.new_task[collection], collection: collection, assignee: auth.currentUser.uid };
-            key = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 16);
-            console.log('Task should be added to DB');
-            this.tasks[key] = task;
+            dbkey = tasksRef.push().key;
+            update_record = {};
+            update_record[dbkey] = task;
+            tasksRef.update(update_record).catch(e => {console.log(e)});
             this.new_task[collection] = "";
         },
         detailView: function(item){
@@ -108,8 +109,9 @@ var app = new Vue({
                                 updated_task.attachment = $('#update_attach').val();
                             }
                             updated_task.collection = task.collection;
-                            task = updated_task;
-                            console.log("Do not forget to update DB");
+                            updateObj = {}
+                            updateObj[key] = updated_task;
+                            tasksRef.update(updateObj);
                         }
                     },
                     close: {
@@ -121,7 +123,7 @@ var app = new Vue({
                                     if ((task.attachment) && (task.attachment !== "undefined")) {
                                         console.log('Attachment deletion goes here');
                                     }
-                                    console.log('Task removal from DB goes here');
+                                    tasksRef.child(key).remove().then(function(){ console.log('Remove Successful')}).catch(e => { console.log(e);});
                                 }
                             });
                         }
@@ -137,7 +139,9 @@ var app = new Vue({
             } else {
                 user.karma = -1;
             }
-            console.log('Karma should be updated in DB');
+            updateObj = {};
+            updateObj[auth.currentUser.uid] = user;
+            usersRef.update(updateObj);
         }
     }
 });
@@ -154,6 +158,15 @@ function validatePassword(pass){
 
 const auth = firebase.auth();
 const storage = firebase.storage();
+const tasksRef = firebase.database().ref().child('tasks');
+tasksRef.on('value', function(snapshot) {
+    app.tasks = snapshot.val();
+});
+const usersRef = firebase.database().ref().child('users');
+usersRef.on('value', function(snapshot) {
+    app.users = snapshot.val();
+    app.user = app.users[auth.currentUser.uid];
+});
 
 $('#login-btn').click(function(){
     const email = $('#email_input').val();
@@ -175,7 +188,9 @@ $('#register-btn').click(e => {
             if (result === pass) {
                 const promise = auth.createUserWithEmailAndPassword(email, pass);
                 promise.then(e => {
-                    console.log('User added. Need to register him in DB');
+                    user = {};
+                    user[e.uid] = {avatar: gravatarURL(e.email), karma: 0, email: e.email};
+                    usersRef.update(user);
                 }).catch(e => console.log(e.message));
             }
         }
